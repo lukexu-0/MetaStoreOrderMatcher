@@ -1,0 +1,19 @@
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.login-container h1 {
+  margin: 0;
+  font-size: 5rem;
+}
+
+.login-container button {
+  font-size: 2.8rem;
+  padding: 25px 40px;
+}

@@ -1,0 +1,85 @@
+.layout {
+  margin-top: 0px;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas: 
+   'header header'
+   'left left'
+  ;
+}
+
+.header {
+  grid-area: header;
+  margin-top: 5px;
+  margin-bottom: 0px;
+  margin-left: 15px;
+  margin-right: 15px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.controlPanel {
+  grid-area: left;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+  padding: 0 15px;
+  gap: 10px;
+  width: 100%;
+
+  box-sizing: border-box;
+
+}
+
+
+.generateSheet {
+  font-size: 2rem;
+  height: 100px;
+  width: 500px;
+  /* padding: 25px 40px; */
+  grid-area: header;
+}
+
+.updatedTime {
+  margin-top: 2px;
+  margin-left: 5px;
+  font-size: 1.5rem;
+}
+
+.logout {
+  font-size: 2rem;
+  height: 100px;
+  padding: 0px 30px;
+  grid-area: header;
+}
+
+.generalButton {
+  align-self: stretch;
+  width: 100%;
+  font-size: 2.5rem;
+  padding: 15px 25px;
+}
+
+.dateForm {
+  font-size: 1.25rem;
+}
+
+.dateForm input,
+.dateForm textarea,
+.dateForm select {
+  font-size: 1em;        
+  height: auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.dateForm input[type = 'date'],
+.dateForm input[type = 'month'] {
+  padding: 8px 10px;
+  font-size: 1rem;
+}
