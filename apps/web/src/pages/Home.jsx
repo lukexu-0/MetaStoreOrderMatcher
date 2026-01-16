@@ -1,3 +1,5 @@
+import { useRouteLoaderData } from 'react-router-dom'
+import loginService from '../services/loginService'
 import './Home.css'
 
 const EmailDateForm = () => {
@@ -40,21 +42,32 @@ const RecieptDateForm = () => {
   )
 }
 
-const BaseButton = ({text, className}) => {
+const BaseButton = ({text, className, onClick}) => {
   return(
-    <button className={className}>{text}</button>
+    <button className={className} onClick = {onClick}>{text}</button>
   )
 }
 
+const logout = async () => {
+  console.log('attempted logout')
+  await loginService.logout()
+}
+
 const HomeHeader = () => {
+  const {user} = useRouteLoaderData('app')
+  const username = user.name
   return(<div className='header'>
     <div>
       <BaseButton text = {"Generate Sheet"} className='generateSheet' />
       <p className='updatedTime'>Last Updated:</p>
-    </div> 
-    <BaseButton text = {'Log out'} className='logout' />
+    </div>
+    <div>
+      <BaseButton text = {'Log out'} className='logout' onClick={logout} /><br/>Signed in as {username}
+    </div>
     </div>)
 }
+
+
 
 const ControlPanel = () => {
   return(

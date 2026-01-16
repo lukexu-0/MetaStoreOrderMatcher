@@ -3,7 +3,7 @@ import router from './router'
 
 function App() {
   return (
-    <div><RouterProvider router = {router}/></div>
+    <div><RouterProvider router = {router} FallbackElement ={<div>Loading...</div>} /></div>
   )
 }
 

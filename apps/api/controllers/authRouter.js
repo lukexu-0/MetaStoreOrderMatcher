@@ -87,7 +87,7 @@ authRouter.get('/google/callback', async (request, response, next) => {
       picture: claims.picture
     }
 
-    response.redirect(FRONTEND_URL)
+    response.redirect(`${FRONTEND_URL}/home`)
   } catch (error) {
     next(error)
   }

@@ -1,11 +1,22 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
+import {loginLoader, requireAuthLoader} from './loaders/authLoader.js'
 import Login from './pages/Login'
 import Home from './pages/Home'
 import NotFound from './pages/NotFound'
- 
+import AppLayout from './components/Outlet.jsx'
+
 const router = createBrowserRouter([
-  { path:'/login', element:<Login />},
-  { path:'/home', element:<Home />},
+  { path:'/login', loader: loginLoader, element:<Login />},
+  { path:'/',
+    id: 'app', 
+    loader: requireAuthLoader,
+    HydrateFallback: () => <div>Loading...</div>,
+    element:<AppLayout />,
+    children:[
+      {index: true, element: <Navigate to = 'home'/>},
+      {path: 'home', element: <Home />}
+    ]
+  },
   { path:'*', element:<NotFound />}
 ])
 
