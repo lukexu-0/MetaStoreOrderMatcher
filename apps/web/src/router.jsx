@@ -10,7 +10,6 @@ const router = createBrowserRouter([
   { path:'/',
     id: 'app', 
     loader: requireAuthLoader,
-    HydrateFallback: () => <div>Loading...</div>,
     element:<AppLayout />,
     children:[
       {index: true, element: <Navigate to = 'home'/>},

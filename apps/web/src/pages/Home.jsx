@@ -75,8 +75,8 @@ const ControlPanel = () => {
       <EmailDateForm />
       <RecieptDateForm />
       <BaseButton text='Update Emails Now' className='generalButton' />
-      <BaseButton text='Delete Receipts' className='generalButton' />
       <BaseButton text='Upload Receipts' className='generalButton' />
+      <BaseButton text='Delete Receipts' className='generalButton' />
     </div>
   )
 }
