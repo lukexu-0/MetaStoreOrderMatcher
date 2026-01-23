@@ -15,12 +15,13 @@ function sniffSpreadsheet(buffer) {
   return "unknown";
 }
 
-const getIndex = (array, value) => {
-  const idx = array.findIndex(
-  h => typeof h === "string" && h.toLowerCase() === value
-  )
-  return idx
+const normalizeHeader = (value) => (
+  typeof value === "string" ? value.trim().toLowerCase() : ""
+)
 
+const getIndex = (array, value) => {
+  const target = normalizeHeader(value)
+  return array.findIndex((header) => normalizeHeader(header) === target)
 }
 
 const parseOrders = (fileBuffer, opts = {}) => {
@@ -45,13 +46,22 @@ const parseOrders = (fileBuffer, opts = {}) => {
   }
 
   const sheetName = workbook.SheetNames[0]
+  if (!sheetName) {
+    throw new Error("No sheets found in spreadsheet")
+  }
   const sheet = workbook.Sheets[sheetName]
+  if (!sheet) {
+    throw new Error("Unable to read first sheet")
+  }
 
   const headerRow = XLSX.utils.sheet_to_json(sheet, {
     header: 1,
     range: 0,
     raw: true
   })[0]
+  if (!headerRow || headerRow.length === 0) {
+    throw new Error("Missing header row")
+  }
 
   const dateIdx = getIndex(headerRow, 'date')
   const trackingIdx = getIndex(headerRow, 'tracking')
@@ -59,6 +69,15 @@ const parseOrders = (fileBuffer, opts = {}) => {
   const qtyIdx = getIndex(headerRow, 'qty')
 
   const colIndices = [dateIdx, trackingIdx, upcIdx, qtyIdx]
+  const missing = [
+    dateIdx === -1 ? "date" : null,
+    trackingIdx === -1 ? "tracking" : null,
+    upcIdx === -1 ? "upc" : null,
+    qtyIdx === -1 ? "qty" : null,
+  ].filter(Boolean)
+  if (missing.length > 0) {
+    throw new Error(`Missing required columns: ${missing.join(", ")}`)
+  }
 
   const rows = XLSX.utils.sheet_to_json(sheet, {
     header: 1,
@@ -67,18 +86,19 @@ const parseOrders = (fileBuffer, opts = {}) => {
     raw: true
   })
 
-  const cutRows = rows.map(row => row.filter((_, index) => colIndices.includes(index)))
-
   const out = []
   
-  for (let i = 1; i < cutRows.length; i++){
-    const row = cutRows[i]
+  for (let i = 1; i < rows.length; i++){
+    const row = rows[i]
     const obj = {}
-    for (let j = 0; j < row.length; j++){
-      const key = cutRows[0][j]
-      obj[key] = cutRows[i][j]
+    for (let j = 0; j < colIndices.length; j++){
+      const colIndex = colIndices[j]
+      const key = headerRow[colIndex]
+      obj[key] = row[colIndex]
     }
     out.push(obj)
   }
   return out
 }
+
+export default parseOrders
