@@ -1,4 +1,4 @@
-import { useRouteLoaderData } from 'react-router-dom'
+import { useRouteLoaderData, useNavigate } from 'react-router-dom'
 import loginService from '../services/loginService'
 import './Home.css'
 
@@ -70,13 +70,14 @@ const HomeHeader = () => {
 
 
 const ControlPanel = () => {
+  const navigate = useNavigate()
+
   return(
     <div className='controlPanel'>
       <EmailDateForm />
       <RecieptDateForm />
       <BaseButton text='Update Emails Now' className='generalButton' />
-      <BaseButton text='Upload Receipts' className='generalButton' />
-      <BaseButton text='Delete Receipts' className='generalButton' />
+      <BaseButton text='Upload Receipts' className='generalButton' onClick={() => navigate('/upload')} />
     </div>
   )
 }

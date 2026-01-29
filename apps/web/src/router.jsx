@@ -3,6 +3,7 @@ import {loginLoader, requireAuthLoader} from './loaders/authLoader.js'
 import Login from './pages/Login'
 import Home from './pages/Home'
 import NotFound from './pages/NotFound'
+import Upload from './pages/Upload.jsx'
 import AppLayout from './components/Outlet.jsx'
 
 const router = createBrowserRouter([
@@ -13,7 +14,8 @@ const router = createBrowserRouter([
     element:<AppLayout />,
     children:[
       {index: true, element: <Navigate to = 'home'/>},
-      {path: 'home', element: <Home />}
+      {path: 'home', element: <Home />},
+      {path: 'Upload', element: <Upload />}
     ]
   },
   { path:'*', element:<NotFound />}

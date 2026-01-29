@@ -5,6 +5,24 @@ import { insertSpreadsheetImport } from '../db/spreadsheets.js'
 
 const uploadRouter = express.Router()
 
+const parseYearMonth = (year, month) => {
+  const yearNum = Number.parseInt(year, 10)
+  if (!Number.isFinite(yearNum) || yearNum < 2000 || yearNum > 2100) {
+    return { error: 'invalid year' }
+  }
+
+  const monthNum = Number.parseInt(month, 10)
+  if (!Number.isFinite(monthNum) || monthNum < 1 || monthNum > 12) {
+    return { error: 'invalid month' }
+  }
+
+  return {
+    yearNum,
+    monthNum,
+    monthStart: `${yearNum}-${String(monthNum).padStart(2, '0')}-01`
+  }
+}
+
 uploadRouter.post('/:year/:month', uploadMiddleware.single('file'), async (request, response) => {
   const { year, month } = request.params
 
@@ -12,16 +30,10 @@ uploadRouter.post('/:year/:month', uploadMiddleware.single('file'), async (reque
     return response.status(400).send({ error: 'missing file' })
   }
 
-  const yearNum = Number.parseInt(year, 10)
-  const monthNum = Number.parseInt(month, 10)
-  if (!Number.isFinite(yearNum) || yearNum < 2000 || yearNum > 2100) {
-    return response.status(400).send({ error: 'invalid year' })
+  const { monthStart, error } = parseYearMonth(year, month)
+  if (error) {
+    return response.status(400).send({ error })
   }
-  if (!Number.isFinite(monthNum) || monthNum < 1 || monthNum > 12) {
-    return response.status(400).send({ error: 'invalid month' })
-  }
-
-  const monthStart = `${yearNum}-${String(monthNum).padStart(2, '0')}-01`
 
   try {
     const sheetObjs = parseOrders(request.file.buffer)

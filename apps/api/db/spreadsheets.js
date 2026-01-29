@@ -132,3 +132,47 @@ export const insertSpreadsheetImport = async ({
     rowCount: rowsWithId.length
   }
 }
+
+export const deleteSpreadsheetImportByMonth = async ({ month }) => {
+  if (!month) throw new Error('month is required')
+
+  const { data: spreadsheets, error: spreadsheetError } = await supabase
+    .from('spreadsheets')
+    .select('id')
+    .eq('month', month)
+
+  if (spreadsheetError) {
+    throw new Error(`Failed to load spreadsheets: ${spreadsheetError.message}`)
+  }
+
+  if (!spreadsheets || spreadsheets.length === 0) {
+    return { spreadsheetCount: 0, rowCount: 0 }
+  }
+
+  const spreadsheetIds = spreadsheets.map((row) => row.id)
+
+  const { data: deletedRows, error: rowsError } = await supabase
+    .from('spreadsheet_rows')
+    .delete()
+    .in('spreadsheet_id', spreadsheetIds)
+    .select('id')
+
+  if (rowsError) {
+    throw new Error(`Failed to delete spreadsheet rows: ${rowsError.message}`)
+  }
+
+  const { data: deletedSpreadsheets, error: deleteError } = await supabase
+    .from('spreadsheets')
+    .delete()
+    .in('id', spreadsheetIds)
+    .select('id')
+
+  if (deleteError) {
+    throw new Error(`Failed to delete spreadsheets: ${deleteError.message}`)
+  }
+
+  return {
+    spreadsheetCount: deletedSpreadsheets?.length ?? 0,
+    rowCount: deletedRows?.length ?? 0
+  }
+}
