@@ -14,10 +14,10 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 const FRONTEND_URL = process.env.NODE_ENV === 'development'
   ? process.env.FRONTEND_URL_DEV
-  : null
+  : process.env.FRONTEND_URL_PROD
 const BACKEND_URL = process.env.NODE_ENV === 'development'
   ? process.env.BACKEND_URL_DEV
-  : null
+  : process.env.BACKEND_URL_PROD
 
 export {
   PORT,
