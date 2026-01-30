@@ -6,6 +6,8 @@ import authRouter from "./controllers/authRouter.js"
 import loginCheckRouter from "./controllers/loginCheckRouter.js"
 import uploadRouter from './controllers/uploadRouter.js'
 import inventoryRouter from './controllers/inventoryRouter.js'
+import syncRouter from './controllers/syncRouter.js'
+import generateRouter from './controllers/generateRouter.js'
 import config from "./utils/config.js"
 
 const app = express()
@@ -18,5 +20,7 @@ app.use('/auth', authRouter)
 app.use('/api/me', loginCheckRouter)
 app.use('/upload', uploadRouter)
 app.use('/inventory', inventoryRouter)
+app.use('/sync', syncRouter)
+app.use('/generate', generateRouter)
 
 export default app

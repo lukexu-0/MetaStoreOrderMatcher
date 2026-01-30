@@ -6,6 +6,7 @@ import {
   BACKEND_URL,
   FRONTEND_URL
 } from '../utils/config.js'
+import { syncGmailOrderEmails } from '../db/gmailOrders.js'
 
 const authRouter = express.Router()
 const REDIRECT_URI = `${BACKEND_URL}/auth/google/callback`
@@ -85,6 +86,21 @@ authRouter.get('/google/callback', async (request, response, next) => {
       email: claims.email,
       name: claims.name,
       picture: claims.picture
+    }
+
+    try {
+      const syncResult = await syncGmailOrderEmails({
+        userId: request.session.user.id,
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        expiresAt: tokens.expires_at
+      })
+      if (syncResult.refreshed) {
+        request.session.google.accessToken = syncResult.accessToken
+        request.session.google.expiresAt = syncResult.expiresAt
+      }
+    } catch (error) {
+      console.error('Failed to sync Gmail order emails', error)
     }
 
     response.redirect(`${FRONTEND_URL}/home`)

@@ -24,4 +24,55 @@ const logout = async () => {
   window.location.href = `/login`
 }
 
-export default {startGoogleLogin, apiMe, logout}
+const syncEmails = async () => {
+  const response = await fetch(`${config.BACKEND_URL}/sync/gmail`, {
+    method: 'POST',
+    credentials: 'include',
+  })
+  if (!response.ok) {
+    throw new Error(`Request failed: ${response.status}`)
+  }
+  try {
+    return await response.json()
+  } catch {
+    return { ok: true }
+  }
+}
+
+const getSyncStatus = async () => {
+  const response = await fetch(`${config.BACKEND_URL}/sync/gmail/status`, {
+    method: 'GET',
+    credentials: 'include',
+  })
+  if (!response.ok) {
+    throw new Error(`Request failed: ${response.status}`)
+  }
+  return await response.json()
+}
+
+const generateSheet = async ({ emailStart, emailEnd, receiptStart, receiptEnd }) => {
+  const response = await fetch(`${config.BACKEND_URL}/generate`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      emailStart,
+      emailEnd,
+      receiptStart,
+      receiptEnd
+    })
+  })
+  if (!response.ok) {
+    throw new Error(`Request failed: ${response.status}`)
+  }
+  return await response.blob()
+}
+
+export default {
+  startGoogleLogin,
+  apiMe,
+  logout,
+  syncEmails,
+  getSyncStatus,
+  generateSheet
+}
