@@ -65,7 +65,7 @@ const statusStyles = {
     fill: { patternType: 'solid', fgColor: { rgb: 'C6EFCE' } },
     font: { color: { rgb: '006100' } }
   },
-  OVERCOUNTED: {
+  OVERCOUNT: {
     fill: { patternType: 'solid', fgColor: { rgb: 'F4B084' } },
     font: { color: { rgb: '7F2100' } }
   },
@@ -73,7 +73,7 @@ const statusStyles = {
     fill: { patternType: 'solid', fgColor: { rgb: 'FFC7CE' } },
     font: { color: { rgb: '9C0006' } }
   },
-  'QTY MISPATCH': {
+  MISMATCH: {
     fill: { patternType: 'solid', fgColor: { rgb: 'FFEB9C' } },
     font: { color: { rgb: '9C6500' } }
   }
@@ -160,14 +160,14 @@ const buildStatusFormula = (rowNumber) => {
   const trackingCell = `B${rowNumber}`
   const qtyCell = `C${rowNumber}`
   const sumif = `SUMIF(${ORDER_SHEET_NAME}!B:B,${trackingCell},${ORDER_SHEET_NAME}!C:C)`
-  return `IF(${sumif}=0,"MISSING",IF(${qtyCell}=${sumif},"MATCH",IF(${qtyCell}>${sumif},"OVERCOUNTED","QTY MISPATCH")))`
+  return `IF(${sumif}=0,"MISSING",IF(${qtyCell}=${sumif},"MATCH",IF(${qtyCell}>${sumif},"OVERCOUNT","MISMATCH")))`
 }
 
 const computeStatus = (emailQty, orderTotal) => {
   if (!orderTotal) return 'MISSING'
   if (emailQty === orderTotal) return 'MATCH'
-  if (emailQty > orderTotal) return 'OVERCOUNTED'
-  return 'QTY MISPATCH'
+  if (emailQty > orderTotal) return 'OVERCOUNT'
+  return 'MISMATCH'
 }
 
 export const generateOrderComparisonWorkbook = async ({

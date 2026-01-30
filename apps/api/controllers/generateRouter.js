@@ -25,7 +25,11 @@ generateRouter.post('/', async (request, response) => {
       receiptEnd
     })
 
-    const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' })
+    const buffer = XLSX.write(workbook, {
+      type: 'buffer',
+      bookType: 'xlsx',
+      cellStyles: true
+    })
     const filename = `order_match_${emailStart}_to_${emailEnd}.xlsx`
 
     response.setHeader(

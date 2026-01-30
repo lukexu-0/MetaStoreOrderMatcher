@@ -1,10 +1,12 @@
 import supabase from './supabaseClient.js'
-import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from '../utils/config.js'
+import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GMAIL_FROM_ADDRESS } from '../utils/config.js'
 
 const GMAIL_BASE_URL = 'https://gmail.googleapis.com/gmail/v1/users/me'
 const GMAIL_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 
-const DEFAULT_FROM_FILTER = 'from:store@email.meta.com'
+const DEFAULT_FROM_FILTER = GMAIL_FROM_ADDRESS
+  ? `from:${GMAIL_FROM_ADDRESS}`
+  : 'from:store@email.meta.com'
 const DEFAULT_SUBJECT_QUERY = 'subject:"Your order #" "is on the way"'
 const DEFAULT_START_MS = Date.UTC(2024, 0, 1)
 
