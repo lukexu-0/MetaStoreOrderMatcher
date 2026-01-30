@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 const PORT = process.env.PORT
+const NODE_ENV = process.env.NODE_ENV
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
@@ -22,6 +23,7 @@ const BACKEND_URL = process.env.NODE_ENV === 'development'
 
 export {
   PORT,
+  NODE_ENV,
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
   SESSION_SECRET,
@@ -34,6 +36,7 @@ export {
 
 export default {
   PORT,
+  NODE_ENV,
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
   SESSION_SECRET,

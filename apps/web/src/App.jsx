@@ -1,9 +1,13 @@
-import { RouterProvider  } from "react-router-dom"
+import { RouterProvider } from "react-router-dom"
 import router from './router'
+import Loading from './components/Loading'
 
 function App() {
   return (
-    <div><RouterProvider router = {router} FallbackElement ={<div>Loading...</div>} /></div>
+    <RouterProvider
+      router={router}
+      fallbackElement={<Loading />}
+    />
   )
 }
 
