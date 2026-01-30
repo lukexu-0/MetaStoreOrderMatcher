@@ -17,3 +17,25 @@
   font-size: 2.8rem;
   padding: 25px 40px;
 }
+
+.wake-status {
+  margin: 8px 0 0;
+  max-width: 520px;
+  font-size: 1.4rem;
+  color: #444;
+}
+
+.wake-status.ready {
+  color: #2f7d32;
+}
+
+.wake-status.error,
+.wake-status.timeout {
+  color: #b00020;
+}
+
+.login-container .wake-retry {
+  margin-top: 6px;
+  font-size: 1.4rem;
+  padding: 10px 16px;
+}

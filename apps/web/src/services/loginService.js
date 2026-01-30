@@ -68,11 +68,19 @@ const generateSheet = async ({ emailStart, emailEnd, receiptStart, receiptEnd })
   return await response.blob()
 }
 
+const wakeBackend = async (signal) => {
+  await fetch(`${config.BACKEND_URL}/api/me`, {
+    credentials: "include",
+    signal
+  })
+}
+
 export default {
   startGoogleLogin,
   apiMe,
   logout,
   syncEmails,
   getSyncStatus,
-  generateSheet
+  generateSheet,
+  wakeBackend
 }
