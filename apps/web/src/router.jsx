@@ -5,20 +5,27 @@ import Home from './pages/Home'
 import NotFound from './pages/NotFound'
 import Upload from './pages/Upload.jsx'
 import AppLayout from './components/Outlet.jsx'
+import RootLayout from './components/RootLayout.jsx'
 
 const router = createBrowserRouter([
-  { path:'/login', loader: loginLoader, element:<Login />},
-  { path:'/',
-    id: 'app', 
-    loader: requireAuthLoader,
-    element:<AppLayout />,
-    children:[
-      {index: true, element: <Navigate to = 'home'/>},
-      {path: 'home', element: <Home />},
-      {path: 'Upload', element: <Upload />}
+  {
+    path: '/',
+    element: <RootLayout />,
+    children: [
+      { path: 'login', loader: loginLoader, element: <Login /> },
+      {
+        id: 'app',
+        loader: requireAuthLoader,
+        element: <AppLayout />,
+        children: [
+          { index: true, element: <Navigate to='home' /> },
+          { path: 'home', element: <Home /> },
+          { path: 'Upload', element: <Upload /> }
+        ]
+      },
+      { path: '*', element: <NotFound /> }
     ]
-  },
-  { path:'*', element:<NotFound />}
+  }
 ])
 
 export default router
