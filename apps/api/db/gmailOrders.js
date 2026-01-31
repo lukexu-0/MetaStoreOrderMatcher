@@ -1,12 +1,10 @@
 import supabase from './supabaseClient.js'
-import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GMAIL_FROM_ADDRESS } from '../utils/config.js'
+import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from '../utils/config.js'
 
 const GMAIL_BASE_URL = 'https://gmail.googleapis.com/gmail/v1/users/me'
 const GMAIL_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 
-const DEFAULT_FROM_FILTER = GMAIL_FROM_ADDRESS
-  ? `from:${GMAIL_FROM_ADDRESS}`
-  : null
+const DEFAULT_FROM_FILTER = 'from:store@email.meta.com'
 const DEFAULT_SUBJECT_QUERY = 'subject:"Your order #" "is on the way"'
 const DEFAULT_START_MS = Date.UTC(2024, 0, 1)
 
@@ -20,9 +18,7 @@ const formatDateForQuery = (ms) => {
 const buildQuery = ({ fromFilter, startMs, endMs, incrementalAfterMs }) => {
   const baseAfter = `after:${formatDateForQuery(startMs - 86400000)}`
   const baseBefore = `before:${formatDateForQuery(endMs)}`
-  const trimmedFrom = typeof fromFilter === 'string' ? fromFilter.trim() : ''
-  const fromClause = trimmedFrom ? `${trimmedFrom} ` : ''
-  let query = `${DEFAULT_SUBJECT_QUERY} ${fromClause}`
+  let query = `${DEFAULT_SUBJECT_QUERY} ${fromFilter} `
   if (incrementalAfterMs && incrementalAfterMs > startMs) {
     query += `after:${formatDateForQuery(incrementalAfterMs)} `
   } else {
@@ -344,7 +340,7 @@ export const syncGmailOrderEmails = async ({
   expiresAt,
   startMs = DEFAULT_START_MS,
   endMs = Date.now() + 86400000,
-  fromFilter,
+  fromFilter = DEFAULT_FROM_FILTER,
   incrementalAfterMs
 }) => {
   if (!userId) throw new Error('syncGmailOrderEmails: userId is required')
@@ -353,11 +349,8 @@ export const syncGmailOrderEmails = async ({
   const effectiveIncrementalAfterMs = (
     typeof incrementalAfterMs === 'number' ? incrementalAfterMs : await getLatestProcessedMs(userId)
   )
-  const resolvedFromFilter = (
-    typeof fromFilter === 'string' ? fromFilter.trim() : DEFAULT_FROM_FILTER
-  ) || ''
   const query = buildQuery({
-    fromFilter: resolvedFromFilter,
+    fromFilter,
     startMs,
     endMs,
     incrementalAfterMs: effectiveIncrementalAfterMs

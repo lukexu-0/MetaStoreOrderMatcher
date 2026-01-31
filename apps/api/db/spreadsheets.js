@@ -89,10 +89,12 @@ const chunk = (items, size) => {
 }
 
 export const insertSpreadsheetImport = async ({
+  userId,
   month,
   sourceName,
   sheetRows
 }) => {
+  if (!userId) throw new Error('userId is required')
   if (!month) throw new Error('month is required')
   if (!Array.isArray(sheetRows)) throw new Error('sheetRows must be an array')
 
@@ -101,6 +103,7 @@ export const insertSpreadsheetImport = async ({
   const { data: spreadsheet, error: spreadsheetError } = await supabase
     .from('spreadsheets')
     .insert({
+      user_id: userId,
       month,
       source_name: sourceName ?? null
     })
@@ -133,12 +136,14 @@ export const insertSpreadsheetImport = async ({
   }
 }
 
-export const deleteSpreadsheetImportByMonth = async ({ month }) => {
+export const deleteSpreadsheetImportByMonth = async ({ userId, month }) => {
+  if (!userId) throw new Error('userId is required')
   if (!month) throw new Error('month is required')
 
   const { data: spreadsheets, error: spreadsheetError } = await supabase
     .from('spreadsheets')
     .select('id')
+    .eq('user_id', userId)
     .eq('month', month)
 
   if (spreadsheetError) {

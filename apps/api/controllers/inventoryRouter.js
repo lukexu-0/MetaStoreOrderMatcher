@@ -23,10 +23,14 @@ const parseYearMonth = (year, month) => {
 }
 
 inventoryRouter.get('/spreadsheets', async (request, response) => {
+  if (!request.session.user) {
+    return response.status(401).json({ error: 'not logged in' })
+  }
   try {
     const { data, error } = await supabase
       .from('spreadsheets')
       .select('*')
+      .eq('user_id', request.session.user.id)
 
     if (error) {
       return response.status(500).json({ error: error.message })
@@ -39,6 +43,9 @@ inventoryRouter.get('/spreadsheets', async (request, response) => {
 })
 
 inventoryRouter.get('/spreadsheet_rows', async (request, response) => {
+  if (!request.session.user) {
+    return response.status(401).json({ error: 'not logged in' })
+  }
   try {
     const { data, error } = await supabase
       .from('spreadsheet_rows')
@@ -56,13 +63,19 @@ inventoryRouter.get('/spreadsheet_rows', async (request, response) => {
 
 inventoryRouter.delete('/:year/:month', async (request, response) => {
   const { year, month } = request.params
+  if (!request.session.user) {
+    return response.status(401).send({ error: 'not logged in' })
+  }
   const { monthStart, error } = parseYearMonth(year, month)
   if (error) {
     return response.status(400).send({ error })
   }
 
   try {
-    const result = await deleteSpreadsheetImportByMonth({ month: monthStart })
+    const result = await deleteSpreadsheetImportByMonth({
+      userId: request.session.user.id,
+      month: monthStart
+    })
     return response.status(200).send(result)
   } catch (error) {
     return response.status(400).send({ error: error.message })

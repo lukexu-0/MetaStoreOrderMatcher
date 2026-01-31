@@ -26,6 +26,10 @@ const parseYearMonth = (year, month) => {
 uploadRouter.post('/:year/:month', uploadMiddleware.single('file'), async (request, response) => {
   const { year, month } = request.params
 
+  if (!request.session.user) {
+    return response.status(401).send({ error: 'not logged in' })
+  }
+
   if (!request.file) {
     return response.status(400).send({ error: 'missing file' })
   }
@@ -38,6 +42,7 @@ uploadRouter.post('/:year/:month', uploadMiddleware.single('file'), async (reque
   try {
     const sheetObjs = parseOrders(request.file.buffer)
     const result = await insertSpreadsheetImport({
+      userId: request.session.user.id,
       month: monthStart,
       sourceName: request.file.originalname,
       sheetRows: sheetObjs

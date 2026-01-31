@@ -109,7 +109,8 @@ const fetchEmailRows = async ({ userId, emailStart, emailEnd }) => {
   }))
 }
 
-const fetchSpreadsheetRows = async ({ startMonth, endMonth }) => {
+const fetchSpreadsheetRows = async ({ userId, startMonth, endMonth }) => {
+  if (!userId) throw new Error('userId is required')
   const start = parseMonthInput(startMonth, 'receiptStart')
   const end = parseMonthInput(endMonth, 'receiptEnd')
   const startValue = start.year * 100 + start.month
@@ -124,6 +125,7 @@ const fetchSpreadsheetRows = async ({ startMonth, endMonth }) => {
   const { data, error } = await supabase
     .from('spreadsheets')
     .select('id, month, spreadsheet_rows(date, tracking_number, quantity)')
+    .eq('user_id', userId)
     .gte('month', startMonthValue)
     .lte('month', endMonthValue)
     .order('month', { ascending: true })
@@ -179,6 +181,7 @@ export const generateOrderComparisonWorkbook = async ({
 }) => {
   const emailRows = await fetchEmailRows({ userId, emailStart, emailEnd })
   const orderRows = await fetchSpreadsheetRows({
+    userId,
     startMonth: receiptStart,
     endMonth: receiptEnd
   })

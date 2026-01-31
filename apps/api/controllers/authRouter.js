@@ -7,6 +7,7 @@ import {
   FRONTEND_URL
 } from '../utils/config.js'
 import { syncGmailOrderEmails } from '../db/gmailOrders.js'
+import { upsertUser } from '../db/users.js'
 
 const authRouter = express.Router()
 const REDIRECT_URI = `${BACKEND_URL}/auth/google/callback`
@@ -86,6 +87,17 @@ authRouter.get('/google/callback', async (request, response, next) => {
       email: claims.email,
       name: claims.name,
       picture: claims.picture
+    }
+
+    try {
+      await upsertUser({
+        id: request.session.user.id,
+        email: request.session.user.email,
+        name: request.session.user.name,
+        picture: request.session.user.picture
+      })
+    } catch (error) {
+      console.error('Failed to upsert user', error)
     }
 
     try {

@@ -1,6 +1,5 @@
 import express from 'express'
 import { syncGmailOrderEmails, getLatestGmailOrderEmailDate } from '../db/gmailOrders.js'
-import { GMAIL_FROM_ADDRESS } from '../utils/config.js'
 
 const syncRouter = express.Router()
 
@@ -15,18 +14,11 @@ syncRouter.post('/gmail', async (request, response) => {
   }
 
   try {
-    const loggedInEmail = request.session.user?.email?.toLowerCase()
-    const targetEmail = GMAIL_FROM_ADDRESS?.toLowerCase()
-    const fromFilterOverride = targetEmail && loggedInEmail === targetEmail
-      ? `from:${GMAIL_FROM_ADDRESS}`
-      : ''
-
     const result = await syncGmailOrderEmails({
       userId: request.session.user.id,
       accessToken: google.accessToken,
       refreshToken: google.refreshToken,
-      expiresAt: google.expiresAt,
-      fromFilter: fromFilterOverride
+      expiresAt: google.expiresAt
     })
 
     if (result.refreshed) {
