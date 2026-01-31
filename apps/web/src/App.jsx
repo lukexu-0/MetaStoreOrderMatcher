@@ -7,6 +7,7 @@ function App() {
     <RouterProvider
       router={router}
       fallbackElement={<Loading />}
+      hydrateFallbackElement={<Loading message="Loading app..." />}
     />
   )
 }
