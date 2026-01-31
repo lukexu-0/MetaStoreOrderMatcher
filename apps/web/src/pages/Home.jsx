@@ -74,9 +74,10 @@ const logout = async () => {
   await loginService.logout()
 }
 
-const HomeHeader = ({ lastUpdated, onGenerate, isGenerateDisabled, isGenerating }) => {
+const HomeHeader = ({ lastUpdated, onGenerate, isGenerateDisabled, isGenerating, isSyncing }) => {
   const {user} = useRouteLoaderData('app')
   const username = user.name
+  const syncingSuffix = isSyncing ? ' (syncing...)' : ''
   return(<div className='header'>
     <div>
       <BaseButton
@@ -85,7 +86,7 @@ const HomeHeader = ({ lastUpdated, onGenerate, isGenerateDisabled, isGenerating 
         onClick={onGenerate}
         disabled={isGenerateDisabled}
       />
-      <p className='updatedTime'>Last Updated: {lastUpdated}</p>
+      <p className='updatedTime'>Most recent email recorded: {lastUpdated}{syncingSuffix}</p>
     </div>
     <div>
       <BaseButton text = {'Log out'} className='logout' onClick={logout} /><br/>Signed in as {username}
@@ -147,7 +148,12 @@ const Home = () => {
         if (isMounted) setLastUpdated('ERROR')
       }
     }
-    loadStatus()
+    const init = async () => {
+      await loadStatus()
+      if (!isMounted) return
+      await handleSyncEmails()
+    }
+    init()
     return () => {
       isMounted = false
     }
@@ -207,6 +213,7 @@ const Home = () => {
         onGenerate={handleGenerateSheet}
         isGenerateDisabled={isGenerateDisabled}
         isGenerating={isGenerating}
+        isSyncing={isSyncing}
       />
       <ControlPanel
         onSync={handleSyncEmails}

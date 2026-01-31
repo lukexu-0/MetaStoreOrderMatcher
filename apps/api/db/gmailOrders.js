@@ -7,6 +7,7 @@ const GMAIL_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const DEFAULT_FROM_FILTER = 'from:store@email.meta.com'
 const DEFAULT_SUBJECT_QUERY = 'subject:"Your order #" "is on the way"'
 const DEFAULT_START_MS = Date.UTC(2024, 0, 1)
+const BATCH_SIZE = 100
 
 const pad2 = (value) => String(value).padStart(2, '0')
 
@@ -94,27 +95,29 @@ const gmailFetch = async (accessToken, url, { method = 'GET', body } = {}) => {
   return response.json()
 }
 
-const listAllMessageIds = async (accessToken, query) => {
-  const messageIds = []
+const listMessageIdBatches = async function* (accessToken, query) {
   let pageToken
   do {
     const params = new URLSearchParams({
       q: query,
-      maxResults: '500'
+      maxResults: String(BATCH_SIZE)
     })
     if (pageToken) params.set('pageToken', pageToken)
     const data = await gmailFetch(
       accessToken,
       `${GMAIL_BASE_URL}/messages?${params.toString()}`
     )
+    const batch = []
     if (data.messages && data.messages.length) {
       for (const message of data.messages) {
-        if (message?.id) messageIds.push(message.id)
+        if (message?.id) batch.push(message.id)
       }
+    }
+    if (batch.length) {
+      yield batch
     }
     pageToken = data.nextPageToken
   } while (pageToken)
-  return messageIds
 }
 
 const getMessageMetadata = async (accessToken, messageId) => {
@@ -292,7 +295,7 @@ export const getLatestGmailOrderEmailDate = async (userId) => {
 const fetchExistingMessageIds = async (userId, messageIds) => {
   if (!messageIds.length) return new Set()
   const existing = new Set()
-  const chunks = chunk(messageIds, 500)
+  const chunks = chunk(messageIds, BATCH_SIZE)
   for (const ids of chunks) {
     const { data, error } = await supabase
       .from('gmail_order_emails')
@@ -312,7 +315,7 @@ const fetchExistingMessageIds = async (userId, messageIds) => {
 
 const insertGmailOrderEmails = async (rows) => {
   if (!rows.length) return 0
-  const chunks = chunk(rows, 500)
+  const chunks = chunk(rows, BATCH_SIZE)
   let inserted = 0
   for (const chunkRows of chunks) {
     const { error, count } = await supabase
@@ -356,40 +359,45 @@ export const syncGmailOrderEmails = async ({
     incrementalAfterMs: effectiveIncrementalAfterMs
   })
 
-  const messageIds = await listAllMessageIds(tokenState.accessToken, query)
-  const existingIds = await fetchExistingMessageIds(userId, messageIds)
-
-  const rows = []
+  let messageCount = 0
   let processed = 0
+  let inserted = 0
 
-  for (const messageId of messageIds) {
-    if (existingIds.has(messageId)) continue
+  for await (const messageIds of listMessageIdBatches(tokenState.accessToken, query)) {
+    if (!messageIds.length) continue
+    messageCount += messageIds.length
+    const existingIds = await fetchExistingMessageIds(userId, messageIds)
 
-    const metadata = await getMessageMetadata(tokenState.accessToken, messageId)
-    const internalMs = Number(metadata.internalDate)
-    const subject = getHeaderValue(metadata?.payload?.headers, 'Subject')
+    const rows = []
+    for (const messageId of messageIds) {
+      if (existingIds.has(messageId)) continue
 
-    if (!isTargetSubject(subject)) continue
-    if (!isWithinDateRange(internalMs, startMs, endMs)) continue
+      const metadata = await getMessageMetadata(tokenState.accessToken, messageId)
+      const internalMs = Number(metadata.internalDate)
+      const subject = getHeaderValue(metadata?.payload?.headers, 'Subject')
 
-    const full = await getMessageFull(tokenState.accessToken, messageId)
-    const body = await getHtmlOrTextBody(tokenState.accessToken, messageId, full.payload)
+      if (!isTargetSubject(subject)) continue
+      if (!isWithinDateRange(internalMs, startMs, endMs)) continue
 
-    rows.push({
-      user_id: userId,
-      email_id: messageId,
-      email_date: new Date(internalMs).toISOString(),
-      tracking_number: extractTrackingNumber(body),
-      quantity: extractTotalQuantity(body)
-    })
-    processed += 1
+      const full = await getMessageFull(tokenState.accessToken, messageId)
+      const body = await getHtmlOrTextBody(tokenState.accessToken, messageId, full.payload)
+
+      rows.push({
+        user_id: userId,
+        email_id: messageId,
+        email_date: new Date(internalMs).toISOString(),
+        tracking_number: extractTrackingNumber(body),
+        quantity: extractTotalQuantity(body)
+      })
+      processed += 1
+    }
+
+    inserted += await insertGmailOrderEmails(rows)
   }
-
-  const inserted = await insertGmailOrderEmails(rows)
 
   return {
     query,
-    messageCount: messageIds.length,
+    messageCount,
     processedCount: processed,
     insertedCount: inserted,
     refreshed: tokenState.refreshed,
