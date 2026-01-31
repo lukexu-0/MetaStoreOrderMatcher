@@ -6,11 +6,13 @@ import NotFound from './pages/NotFound'
 import Upload from './pages/Upload.jsx'
 import AppLayout from './components/Outlet.jsx'
 import RootLayout from './components/RootLayout.jsx'
+import Loading from './components/Loading.jsx'
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <RootLayout />,
+    hydrateFallbackElement: <Loading message="Loading app..." />,
     children: [
       { path: 'login', loader: loginLoader, element: <Login /> },
       {
